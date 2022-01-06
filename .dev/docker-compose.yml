@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+  home.queue-test.server:
+    image: nginx:alpine
+    container_name: home.queue-test.server
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ./.dev/nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+    - "8081:80"
+    environment:
+      - VIRTUAL_HOST=queue-test.loc
+    networks:
+      - default
+      - reverse-proxy
+
+  home.queue-test.fpm:
+    build:
+      context: .dev/
+      dockerfile: php74-fpm/Dockerfile
+    image: rabbitmq-php74-fpm
+    container_name: home.queue-test.fpm
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ./.dev/php/php.ini:/etc/php/7.4/fpm/php.ini
+      - ./.dev/php/php.ini:/etc/php/7.4/cli/php.ini
+    networks:
+      - default
+      - rabbitmq
+
+networks:
+  default:
+    name: home.queue-test
+  rabbitmq:
+    external: true
+  reverse-proxy:
+    external: true
